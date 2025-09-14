@@ -1,0 +1,61 @@
+# -------------------
+# Virtual environment
+# -------------------
+venv/
+.env/
+__pypackages__/
+
+# -------------------
+# Python cache files
+# -------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -------------------
+# Jupyter Notebook checkpoints
+# -------------------
+.ipynb_checkpoints/
+
+# -------------------
+# PyTorch / TensorFlow model weights
+# -------------------
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# -------------------
+# Logs and temporary files
+# -------------------
+*.log
+*.tmp
+*.swp
+
+# -------------------
+# Mac-specific files
+# -------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon?
+._*
+
+# Thumbnails
+._.DS_Store
+*.DS_Store
+
+# -------------------
+# VSCode
+# -------------------
+.vscode/
+*.code-workspace
+
+# -------------------
+# Other system files
+# -------------------
+*.so
+*.dylib
