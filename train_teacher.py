@@ -57,5 +57,24 @@ for epoch in range(5):  # Train for 5 epochs (can increase)
 # Save teacher model
 torch.save(teacher_model.state_dict(), 'teacher_model.pth')
 
+# Teacher Model Evaluation: Evaluate the teacher model on the test set
+teacher_model.eval()  # Set to evaluation mode
+
+correct = 0
+total = 0
+test_dataset = datasets.MNIST(root='data', train=False, download=True, transform=transform)
+test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+
+with torch.no_grad():  # No need to compute gradients during evaluation
+    for images, labels in test_loader:
+        images, labels = images.to(device), labels.to(device)
+        outputs = teacher_model(images)
+        _, predicted = torch.max(outputs, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+accuracy = 100 * correct / total
+print(f'Teacher Model Test Accuracy: {accuracy:.2f}%')
+
 # Close the TensorBoard writer
 writer.close()
