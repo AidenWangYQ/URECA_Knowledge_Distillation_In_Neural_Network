@@ -1,0 +1,7 @@
+#!/Users/aidenwang/Documents/Y2S1/URECA/URECA_Knowledge_Distillation_In_Neural_Network/.venv/bin/python3.12
+import sys
+from tensorboard.main import run_main
+if __name__ == '__main__':
+    if sys.argv[0].endswith('.exe'):
+        sys.argv[0] = sys.argv[0][:-4]
+    sys.exit(run_main())
