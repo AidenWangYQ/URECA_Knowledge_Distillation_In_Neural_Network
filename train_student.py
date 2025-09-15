@@ -12,8 +12,8 @@ from data_pipeline import get_data_loader  # Import the new data loading pipelin
 def parse_args():
     parser = argparse.ArgumentParser(description="Train Student Model")
     parser.add_argument('--hidden_sizes', type=int, nargs='+', default=[800, 800], help="Hidden layer sizes (e.g., 800 800)")
-    parser.add_argument('--dropout_rate', type=float, default=0.5, help="Dropout rate")
-    parser.add_argument('--temperature', type=float, default=5, help="Temperature for distillation")
+    parser.add_argument('--dropout_rate', type=float, default=0.0, help="Dropout rate")
+    parser.add_argument('--temperature', type=float, default=1, help="Temperature for distillation")
     parser.add_argument('--use_distillation', type=bool, default=True, help="Whether to use distillation")
     parser.add_argument('--batch_size', type=int, default=64, help="Batch size for training")
     parser.add_argument('--epochs', type=int, default=5, help="Number of epochs")
