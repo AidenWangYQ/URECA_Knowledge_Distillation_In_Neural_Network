@@ -17,3 +17,4 @@ class TeacherNet(nn.Module): # TeacherNet inherits from nn.Module (gains access 
         x = F.relu(self.fc2(x)) # Apply RElU activation after 2nd layer
         x = self.fc3(x) # Output layer (no activation function)
         return x
+
