@@ -1,12 +1,12 @@
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
 from models.student_model import StudentNet
 from distillation import distillation_loss
 from models.teacher_model import TeacherNet
 from torch.utils.tensorboard import SummaryWriter  # Import TensorBoard
 import argparse  # For command-line argument parsing
+from data_pipeline import get_data_loader  # Import the new data loading pipeline
 
 # Argument parser to accept experiment parameters
 def parse_args():
@@ -17,14 +17,20 @@ def parse_args():
     parser.add_argument('--use_distillation', type=bool, default=True, help="Whether to use distillation")
     parser.add_argument('--batch_size', type=int, default=64, help="Batch size for training")
     parser.add_argument('--epochs', type=int, default=5, help="Number of epochs")
+    parser.add_argument('--jitter', action='store_true', help="Whether to jitter images by 2 pixels")
+    parser.add_argument('--omit_class', type=int, help="Class to omit from the dataset (e.g., 3 for omitting '3')")
+    parser.add_argument('--classes', type=int, nargs='+', help="Classes to include (e.g., 7 8 for including only 7s and 8s)")
     return parser.parse_args()
 
 # Train the student model
 def train_student(args):
-    # Data loading and transformation
-    transform = transforms.Compose([transforms.ToTensor()])
-    train_dataset = datasets.MNIST(root='data', train=True, download=True, transform=transform)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    # Get the appropriate data loader based on the experiment parameters
+    train_loader = get_data_loader(
+        classes=args.classes,            # Classes to include (e.g., 7s and 8s)
+        omit_class=args.omit_class,      # Class to omit (e.g., 3)
+        jitter=args.jitter,              # Whether to jitter the images
+        batch_size=args.batch_size       # Batch size
+    )
 
     # Model setup
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -35,10 +41,9 @@ def train_student(args):
         use_distillation=args.use_distillation
     ).to(device)
 
-    teacher_model = TeacherNet().to(device) # Initialize the teacher model
-    teacher_model.load_state_dict(torch.load('teacher_model.pth')) # Load pre-trained weights for the teacher model (into state_dict)
+    teacher_model = TeacherNet().to(device)  # Initialize the teacher model
+    teacher_model.load_state_dict(torch.load('teacher_model.pth'))  # Load pre-trained weights for the teacher model
     teacher_model.eval()  # Set the teacher model to evaluation mode
-    # Evaluation mode deisables dropoout & modifies batch normalization to ensure consistency.
     optimizer = optim.Adam(student_model.parameters(), lr=0.001)
 
     # Set up TensorBoard writer
