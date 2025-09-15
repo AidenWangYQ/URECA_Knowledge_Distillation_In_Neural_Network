@@ -14,6 +14,7 @@ def parse_args():
     parser.add_argument('--jitter', action='store_true', help="Whether to jitter images by 2 pixels")
     parser.add_argument('--omit_class', type=int, help="Class to omit from the dataset (e.g., 3 for omitting '3')")
     parser.add_argument('--classes', type=int, nargs='+', help="Classes to include (e.g., 7 8 for including only 7s and 8s)")
+    parser.add_argument('--use_l2_regularization', action='store_true', help="Whether to apply L2 regularization")
     return parser.parse_args()
 
 # Train the teacher model
@@ -28,7 +29,11 @@ def train_teacher(args):
 
     # Model setup
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    teacher_model = TeacherNet().to(device)  # Initialize the teacher model
+    teacher_model = TeacherNet(
+        hidden_sizes=[1200, 1200],  # Example hidden layer sizes
+        dropout_rate=0.5,           # 50% dropout by default
+        use_l2_regularization=args.use_l2_regularization
+    ).to(device)  # Initialize the teacher model
     criterion = torch.nn.CrossEntropyLoss()  # Cross-entropy loss for training
     optimizer = optim.Adam(teacher_model.parameters(), lr=0.001)  # Adam optimizer
 
@@ -43,8 +48,13 @@ def train_teacher(args):
             images, labels = images.to(device), labels.to(device)  # Move to device (GPU or CPU)
 
             optimizer.zero_grad()  # Zero the gradients
-            outputs = teacher_model(images)  # Forward pass (teacher model)
+            outputs, l2_norm = teacher_model(images)  # Forward pass (teacher model)
             loss = criterion(outputs, labels)  # Compute loss between predicted and true values
+            
+            # If using L2 regularization, add the L2 penalty to the loss
+            if args.use_l2_regularization:
+                loss += 0.01 * l2_norm  # You can adjust the regularization strength (0.01 here)
+
             loss.backward()  # Backpropagation
             optimizer.step()  # Update the teacher model's parameters
 

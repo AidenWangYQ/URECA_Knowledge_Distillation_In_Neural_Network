@@ -1,20 +1,42 @@
 import torch
-import torch.nn as nn # Contains building blocks for neural networks, such as layers (nn.Linear) & loss functions
-import torch.nn.functional as F # Provides functional API functions for common operations like activations (F.relu) that arn't layers themselves
+import torch.nn as nn
+import torch.nn.functional as F
 
-class TeacherNet(nn.Module): # TeacherNet inherits from nn.Module (gains access to PyTorch's model-building features like automatic differentiation and parameter management)
-    def __init__(self):
+class TeacherNet(nn.Module):
+    def __init__(self, input_size=28*28, hidden_sizes=[1200, 1200], output_size=10, dropout_rate=0.5, use_l2_regularization=False):
         super(TeacherNet, self).__init__()
-        # Layer definitions
-        # Linear Layers: Perform weighted sum of the inputs, adding a bias, to transform the input data into higher-dimensional space.
-        self.fc1 = nn.Linear(28*28, 1200)  # Input to first hidden layer (Fully connected linear layer; Take input size 28*28, outputs tensor of size 1200)
-        self.fc2 = nn.Linear(1200, 1200)   # Hidden to hidden layer (Second fully connected layer, take input of size 1200 and outputs 1200 values)
-        self.fc3 = nn.Linear(1200, 10)     # Final output layer (for MNIST, 10 classes) (Final fully connected layer, which outputs 10 values, corresponding to the 10 class probabilities for MNIST(0-9))
+        
+        self.hidden_sizes = hidden_sizes
+        self.use_l2_regularization = use_l2_regularization  # Whether to apply L2 regularization
+        self.dropout_rate = dropout_rate  # Dropout rate (50% dropout by default)
 
-    def forward(self, x): # Does foward pass of the model, which is how the input x flows through the network
-        x = x.view(-1, 28*28)  # Flatten the image (to 784 elements)
-        x = F.relu(self.fc1(x)) # Apply ReLU activation after 1st layer
-        x = F.relu(self.fc2(x)) # Apply RElU activation after 2nd layer
-        x = self.fc3(x) # Output layer (no activation function)
-        return x
+        # Create a list of layers (input to hidden layers)
+        self.fc_layers = nn.ModuleList()  # List to hold the layers
+        prev_size = input_size  # Start with the input size (784 for MNIST)
+        for size in hidden_sizes:
+            self.fc_layers.append(nn.Linear(prev_size, size))  # Create a Linear layer
+            prev_size = size  # Update prev_size to the current layer size for the next layer
+        
+        # Output layer
+        self.fc_out = nn.Linear(prev_size, output_size)
+        
+        # Dropout layer
+        self.dropout = nn.Dropout(p=self.dropout_rate)  # Dropout with the specified probability
+
+    def forward(self, x):
+        x = x.view(-1, 28*28)  # Flatten the input image (28x28 -> 784)
+
+        # Pass through hidden layers with ReLU activation and dropout
+        for fc in self.fc_layers:
+            x = F.relu(fc(x))  # Apply ReLU activation after each hidden layer
+            x = self.dropout(x)  # Apply dropout after each hidden layer
+        
+        x = self.fc_out(x)  # Output layer (no activation function here)
+        
+        # L2 Regularization (apply L2 penalty if enabled)
+        if self.use_l2_regularization:
+            l2_norm = sum(torch.sum(param**2) for param in self.parameters())  # Sum of squared parameters for L2 regularization
+            return x, l2_norm  # Return the L2 penalty along with the output
+
+        return x  # Return the raw output if L2 regularization is not used
 
