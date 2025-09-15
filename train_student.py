@@ -118,7 +118,7 @@ def evaluate_model(model, test_loader, device):
     with torch.no_grad():  # Disable gradient computation for evaluation
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)  # Move to device
-            outputs, _ = model(images)  # Get the output from the model (ignore L2 norm)
+            outputs = model(images)  # Get the output from the model (ignore L2 norm)
             _, predicted = torch.max(outputs, 1)  # Get the class with the highest probability
 
             total += labels.size(0)
