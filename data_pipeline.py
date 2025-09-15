@@ -21,7 +21,7 @@ class FilteredDataset(torch.utils.data.Dataset):
 
 # Custom Dataset for omitting specific classes
 class OmitClassDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, omit_class=3):
+    def __init__(self, dataset, omit_class=None):
         self.dataset = dataset
         self.omit_class = omit_class
         self.filtered_data = []
