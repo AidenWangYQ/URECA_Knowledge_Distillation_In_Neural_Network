@@ -5,6 +5,7 @@ from models.teacher_model import TeacherNet
 from torch.utils.tensorboard import SummaryWriter  # Import TensorBoard
 import argparse  # For command-line argument parsing
 from data_pipeline import get_data_loader  # Import the new data loading pipeline
+from torchvision import datasets, transforms  # For test dataset loading
 
 # Argument parser to accept experiment parameters
 def parse_args():
@@ -40,12 +41,17 @@ def train_teacher(args):
     # Set up TensorBoard writer
     writer = SummaryWriter('runs/teacher_experiment')  # Logs will be saved in this folder
 
+    # Load the test dataset (unchanged by transformations from training)
+    transform = transforms.Compose([transforms.ToTensor()])
+    test_dataset = datasets.MNIST(root='data', train=False, download=True, transform=transform)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
+
     # Training loop
     for epoch in range(args.epochs):  # Train for the specified number of epochs
         teacher_model.train()  # Set model to training mode (affects layers like dropout, batch normalization)
         running_loss = 0.0
         for images, labels in train_loader:  # Iterate over batches in the training set
-            images, labels = images.to(device), labels.to(device)  # Move to device (GPU or CPU)
+            images, labels = images.to(device), labels.to(device)  # Move to device
 
             optimizer.zero_grad()  # Zero the gradients
             outputs, l2_norm = teacher_model(images)  # Forward pass (teacher model)
@@ -69,7 +75,7 @@ def train_teacher(args):
                 writer.add_histogram(f'{name}_weights', param, epoch + 1)
 
         # Log activations of the first layer (for teacher model)
-        activation = teacher_model.fc1(images.view(-1, 28*28))  # Get activations of the first layer
+        activation = teacher_model.fc_layers[0](images.view(-1, 28*28))  # Get activations of the first layer
         writer.add_histogram('fc1/activation', activation, epoch + 1)
 
         # Log gradients of the weights (after backward pass)
@@ -79,11 +85,37 @@ def train_teacher(args):
 
         print(f"Epoch {epoch + 1}, Loss: {running_loss / len(train_loader):.4f}")
 
+        # Calculate and log test errors after each epoch
+        test_errors = evaluate_model(teacher_model, test_loader, device)
+        writer.add_scalar('Test Errors', test_errors, epoch + 1)  # Log test errors to TensorBoard
+
+        # Optionally, print test errors after each epoch
+        print(f"Test Errors (Epoch {epoch + 1}): {test_errors}")
+
     # Save teacher model
     torch.save(teacher_model.state_dict(), 'teacher_model.pth')  # Save the trained teacher model
 
     # Close the TensorBoard writer
     writer.close()
+
+# Evaluation function to calculate test errors
+def evaluate_model(model, test_loader, device):
+    model.eval()  # Set to evaluation mode (disables dropout, batch normalization)
+    correct = 0
+    total = 0
+
+    with torch.no_grad():  # Disable gradient computation for evaluation
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)  # Move to device
+            outputs, _ = model(images)  # Get the output from the model (ignore L2 norm)
+            _, predicted = torch.max(outputs, 1)  # Get the class with the highest probability
+
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()  # Count the number of correct predictions
+
+    # Calculate the number of test errors
+    test_errors = total - correct
+    return test_errors
 
 # Main entry point to start training
 if __name__ == "__main__":
