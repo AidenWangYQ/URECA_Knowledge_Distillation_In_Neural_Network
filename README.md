@@ -1,15 +1,20 @@
-# URECA_Knowledge_Distillation_In_Neural_Network
-This repository contains my research work on the topic of model compression and knowledge distillation in neural networks. 
-This is a preliminary examination and verification of the theory outlined in the paper "Distilling the Knowledge in a Neural Network" (Published Mar 9, 2015, by authors Geoffery Hinton, Oriol Vinyals, Jeff Dean), particularly for their experiments on the MNIST dataset via their specified parameters.
+# URECA: Knowledge Distillation in Neural Networks
+This repository contains my research on model compression and knowledge distillation, replicating and validating the experiments from “Distilling the Knowledge in a Neural Network” (Hinton, Vinyals & Dean, 2015). The project focuses on training student networks on the MNIST dataset using teacher–student distillation strategies, and compares performance improvements across different configurations.
 
-Structure of Repository:
-- requirements.txt: Contains all the dependencies and requirements to run the models.
-- data_pipeline.py: Provides functions that modify the way the input data before being trained in the models.
-- distillaton.py: Outlines the distillation loss function that is used to train a student model more effectvely.
-- train_student.py: Code to train student model.
-- tain_teacher.py: Code to train teacher model.
-- models/student_model.py: Outlines how the student model is structured.
-- models/teacher_model.py: Outlines how the teacher model is structured.
-- runs folder: Contains results of all the runs I did. Do not open these, refer to my documented collated results pdfs for summary.
-- data folder: Contains raw data from the MNIST dataset.
-- .venv folder: Virtual environment folder.
+**Repository Structure**
+
+**`requirements.txt`** – Dependencies to reproduce the experiments
+
+**`data_pipeline.py`** – Functions for preprocessing and preparing MNIST data
+
+**`distillation.py`** – Implementation of the distillation loss function
+
+**`train_teacher.py`** – Training loop for the teacher model
+
+**`train_student.py`** – Training loop for the student model
+
+**`models/student_model.py`** – Architecture of the student network
+
+**`models/teacher_model.py`** – Architecture of the teacher network
+
+**`runs/`** – Intermediate run outputs (final summarized results in attached PDF)
