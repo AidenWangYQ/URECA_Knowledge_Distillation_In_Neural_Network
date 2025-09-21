@@ -1,7 +1,7 @@
-> ⚠️ This repository is part of a larger URECA project titled **"Compressing Vision-Language Models via Knowledge Distillation"**
+> ⚠️ This repository is part of a larger URECA project titled **"Compressing Vision-Language Models (VLMs) via Knowledge Distillation (KD)"**.
 > 
 > ⚠️ **Work in Progress:** This repository is still under active development. Features, results, and documentation are being updated regularly.
-# URECA: Knowledge Distillation in Neural Networks
+# URECA: Knowledge Distillation in Neural Networks Research
 This repository contains my research on model compression and knowledge distillation, replicating and validating the experiments from “Distilling the Knowledge in a Neural Network” (Hinton, Vinyals & Dean, 2015). The project focuses on training student networks on the MNIST dataset using teacher–student distillation strategies, and compares performance improvements across different configurations.
 
 **Repository Structure**
